@@ -136,7 +136,7 @@ public class TodoistClient {
 
         conn.setRequestMethod("DELETE");
 
-        // 👇 SAME HEADER LOGIC USED HERE TOO
+        // header logic
         applyHeaders(conn);
 
         int status =
