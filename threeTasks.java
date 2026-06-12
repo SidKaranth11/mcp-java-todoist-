@@ -53,9 +53,6 @@ public class TodoistClient {
   
   public static String updateTask(String taskId , String content , String description , String dueString) throws Exception {
      String json = new StringBuilder();
-       if(taskId == null){
-
-       }
       json.append("{");
       if(content != null){
         json.append("\"content\":\"").append(content).append("\",");
