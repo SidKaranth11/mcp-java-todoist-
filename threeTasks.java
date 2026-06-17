@@ -51,19 +51,42 @@ public class TodoistClient {
         return "Deleted task " + taskId;
     }
   
-  public static String updateTask(String taskId , String content , String description , String dueString) throws Exception {
-     String json = new StringBuilder();
-      json.append("{");
-      if(content != null){
-        json.append("\"content\":\"").append(content).append("\",");
-      }
-      if(decription != null){
-        json.append("\"description\":\"").append(description).append("\",");
-      }
-      if(dueString != null){
-        json.append("\"due_string\":\"").append(dueString).append("\"");
-      }
-     json.append("}");
-    return request("POST""/tasks/" + taskId,json);
+ public static String updateTask( String taskId, String content,String description,String dueString) throws Exception {
+
+    StringBuilder json = new StringBuilder();
+
+    json.append("{");
+
+    if (content != null) {
+        json.append("\"content\":\"").append(content).append("\"");
+    }
+
+    if (description != null) {
+        json.append(",\"description\":\"").append(description).append("\"");
+    }
+
+    if (dueString != null) {
+        json.append(",\"due_string\":\"").append(dueString).append("\"");
+    }
+
+    json.append("}");
+
+    return request(
+            "POST",
+            "/tasks/" + taskId,
+            json.toString()
+    );
 }
+
+ public static void main(String[] args) throws Exception {
+
+        String response =
+                TodoistClient.createTask(
+                        "Study Java",
+                        "Practice Todoist API",
+                        "tomorrow"
+                );
+
+        System.out.println(response);
+    }
 }
