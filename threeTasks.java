@@ -38,9 +38,16 @@ public class TodoistClient {
     }
 
     public static String createTask(String content, String description, String dueString) throws Exception {
-        StringBuilder json = new StringBuilder("{\"content\":\"" + content + "\"");
-        if (description != null) json.append(",\"description\":\"").append(description).append("\"");
-        if (dueString != null) json.append(",\"due_string\":\"").append(dueString).append("\"");
+        StringBuilder json = new StringBuilder("{\"content\":\"" + escapeJson(content) + "\"");
+
+        if (description != null && !description.isEmpty()) {
+            json.append(",\"description\":\"").append(escapeJson(description)).append("\"");
+        }
+
+        if (dueString != null && !dueString.isEmpty()) {
+            json.append(",\"due_string\":\"").append(escapeJson(dueString)).append("\"");
+        }
+
         json.append("}");
 
         return request("POST", "/tasks", json.toString());
@@ -50,42 +57,72 @@ public class TodoistClient {
         request("DELETE", "/tasks/" + taskId, null);
         return "Deleted task " + taskId;
     }
-  
- public static String updateTask( String taskId, String content,String description,String dueString) throws Exception {
 
-    StringBuilder json = new StringBuilder();
+    public static String updateTask(String taskId, String content, String description, String dueString) throws Exception {
 
-    json.append("{");
+        StringBuilder json = new StringBuilder();
+        json.append("{");
 
-    if (content != null) {
-        json.append("\"content\":\"").append(content).append("\"");
+        boolean hasField = false;
+
+        if (content != null && !content.isEmpty()) {
+            json.append("\"content\":\"").append(escapeJson(content)).append("\"");
+            hasField = true;
+        }
+
+        if (description != null && !description.isEmpty()) {
+            if (hasField) json.append(",");
+            json.append("\"description\":\"").append(escapeJson(description)).append("\"");
+            hasField = true;
+        }
+
+        if (dueString != null && !dueString.isEmpty()) {
+            if (hasField) json.append(",");
+            json.append("\"due_string\":\"").append(escapeJson(dueString)).append("\"");
+            hasField = true;
+        }
+
+        json.append("}");
+
+        if (!hasField) {
+            throw new RuntimeException("At least one field is required to update task");
+        }
+
+        return request(
+                "POST",
+                "/tasks/" + taskId,
+                json.toString()
+        );
     }
 
-    if (description != null) {
-        json.append(",\"description\":\"").append(description).append("\"");
+    private static String escapeJson(String value) {
+        if (value == null) return "";
+
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
-    if (dueString != null) {
-        json.append(",\"due_string\":\"").append(dueString).append("\"");
-    }
+    public static void main(String[] args) throws Exception {
 
-    json.append("}");
+        if (args.length == 0) {
+            System.out.println("Usage:");
+            System.out.println("java TodoistClient \"Task title\" \"Description\" \"Due date\"");
+            return;
+        }
 
-    return request(
-            "POST",
-            "/tasks/" + taskId,
-            json.toString()
-    );
-}
+        String content = args[0];
+        String description = args.length > 1 ? args[1] : null;
+        String dueString = args.length > 2 ? args[2] : null;
 
- public static void main(String[] args) throws Exception {
-
-        String response =
-                TodoistClient.createTask(
-                        "Study Java",
-                        "Practice Todoist API",
-                        "tomorrow"
-                );
+        String response = TodoistClient.createTask(
+                content,
+                description,
+                dueString
+        );
 
         System.out.println(response);
     }
